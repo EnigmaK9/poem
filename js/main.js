@@ -1,7 +1,8 @@
 /*
  * Creation Date: 2026-07-10
- * Last Modified: 2026-07-10
- * Description: Single-poem display with daily-fixed shuffle and EN/ES toggle
+ * Last Modified: 2026-07-11
+ * Description: Single-poem display with daily-fixed shuffle, EN/ES toggle,
+ *              and painting gallery below. No dependencies.
  * Author: enigmak9
  */
 
@@ -10,11 +11,15 @@
 
   var TOTAL_ORIGINAL = 1000;
   var TOTAL_FAMOUS = 1000;
-  var TOTAL = TOTAL_ORIGINAL + TOTAL_FAMOUS;
+  var TOTAL_POEMS = TOTAL_ORIGINAL + TOTAL_FAMOUS;
 
-  var dailyOrder = [];
-  var currentPosition = 0;
+  var poemOrder = [];
+  var poemPos = 0;
+  var paintingOrder = [];
+  var paintingPos = 0;
   var currentLang = "en";
+
+  /* ---- Poem Helpers ---- */
 
   function getPoem(globalIndex, lang) {
     lang = lang || currentLang;
@@ -42,7 +47,6 @@
 
     var bodyEl = document.getElementById("poem-body");
     bodyEl.innerHTML = "";
-
     for (var i = 0; i < poem.lines.length; i++) {
       if (poem.lines[i] === "") {
         bodyEl.appendChild(document.createElement("br"));
@@ -52,61 +56,94 @@
         bodyEl.appendChild(p);
       }
     }
-
-    document.getElementById("poem-counter").textContent = (position + 1) + " of " + TOTAL;
+    document.getElementById("poem-counter").textContent = (position + 1) + " of " + TOTAL_POEMS;
   }
 
-  function showCurrent() {
-    showPoem(getPoem(dailyOrder[currentPosition], currentLang), currentPosition);
+  function showCurrentPoem() {
+    showPoem(getPoem(poemOrder[poemPos], currentLang), poemPos);
   }
 
-  function showNext() {
-    currentPosition++;
-    if (currentPosition >= dailyOrder.length) {
-      currentPosition = 0;
+  function showNextPoem() {
+    poemPos = (poemPos + 1) % poemOrder.length;
+    showCurrentPoem();
+  }
+
+  /* ---- Painting Helpers ---- */
+
+  function showPainting(painting, position) {
+    var el = document.getElementById("painting-display");
+    var imgHtml = "";
+    if (painting.image) {
+      imgHtml = '<img src="' + painting.image + '" alt="' + painting.title + '" class="painting-img" loading="lazy">';
     }
-    showCurrent();
+    var desc = painting.description || "";
+
+    el.innerHTML =
+      '<div class="painting-card">' +
+        imgHtml +
+        '<div class="painting-info">' +
+          '<h3 class="painting-title">' + painting.title + '</h3>' +
+          '<span class="painting-meta">' + painting.artist + " &middot; " + painting.year + " &middot; " + painting.movement + '</span>' +
+          (desc ? '<p class="painting-desc">' + desc + "</p>" : "") +
+        "</div>" +
+      "</div>";
+
+    document.getElementById("painting-counter").textContent = (position + 1) + " of " + PaintingEngine.TOTAL;
   }
 
-  function toggleLang() {
-    currentLang = currentLang === "en" ? "es" : "en";
-    var btn = document.getElementById("lang-toggle");
-    btn.textContent = currentLang === "en" ? "ES" : "EN";
-    showCurrent();
+  function showCurrentPainting() {
+    var p = PaintingEngine.generate(paintingOrder[paintingPos], currentLang);
+    showPainting(p, paintingPos);
   }
+
+  function showNextPainting() {
+    paintingPos = (paintingPos + 1) % paintingOrder.length;
+    showCurrentPainting();
+  }
+
+  /* ---- Init ---- */
 
   function init() {
-    var check = PoemEngine.selfCheck();
-    if (!check.allUnique) {
-      document.body.textContent = "Poem generation check failed. Please reload.";
+    if (!PoemEngine.selfCheck().allUnique ||
+        !FamousEngine.selfCheck().realPoem0) {
+      document.body.textContent = "Generation check failed. Please reload.";
       return;
     }
 
-    var fcheck = FamousEngine.selfCheck();
-    if (!fcheck.realPoem0) {
-      document.body.textContent = "Famous poem check failed. Please reload.";
-      return;
-    }
-
-    dailyOrder = Rotation.getDailyOrder(TOTAL);
-    currentPosition = 0;
+    poemOrder = Rotation.getDailyOrder(TOTAL_POEMS);
+    poemPos = 0;
+    paintingOrder = Rotation.getDailyOrder(PaintingEngine.TOTAL);
+    paintingPos = 0;
 
     document.getElementById("date-label").textContent = Rotation.getTodayLabel();
-    showCurrent();
+    showCurrentPoem();
+    showCurrentPainting();
 
-    document.getElementById("next-poem").addEventListener("click", showNext);
+    document.getElementById("next-poem").addEventListener("click", showNextPoem);
+    document.getElementById("next-painting").addEventListener("click", showNextPainting);
     document.getElementById("lang-toggle").addEventListener("click", toggleLang);
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "ArrowRight" || e.key === " " || e.key === "n") {
         e.preventDefault();
-        showNext();
+        showNextPoem();
+      }
+      if (e.key === "p") {
+        e.preventDefault();
+        showNextPainting();
       }
       if (e.key === "t") {
         e.preventDefault();
         toggleLang();
       }
     });
+  }
+
+  function toggleLang() {
+    currentLang = currentLang === "en" ? "es" : "en";
+    document.getElementById("lang-toggle").textContent = currentLang === "en" ? "ES" : "EN";
+    showCurrentPoem();
+    showCurrentPainting();
   }
 
   if (document.readyState === "loading") {
