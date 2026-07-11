@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Poems</title>
+  <meta name="description" content="A collection of procedurally generated poems that change daily.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a href="#poem-stream" class="skip-link">Skip to poems</a>
+
+  <header class="site-header">
+    <h1>Daily Poems</h1>
+    <p id="date-label">Loading...</p>
+  </header>
+
+  <main class="container">
+    <div id="poem-stream" class="poem-stream"></div>
+
+    <div class="load-more-wrap">
+      <button id="load-more" class="load-more-btn">Load 20 more</button>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <span id="poem-count">1000</span> poems &middot; regenerated daily
+  </footer>
+
+  <noscript>
+    <p>This site requires JavaScript to generate poems.</p>
+  </noscript>
+
+  <script src="js/poems.js"></script>
+  <script src="js/rotation.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
