@@ -459,29 +459,490 @@ var PoemEngine = (function () {
 
   var themes = ["nature", "time", "love", "solitude", "wonder", "memory"];
 
+  /* ================================================================
+   * SPANISH (ES) WORD POOLS AND GENERATORS
+   * ================================================================ */
+
+  var esNounsByTheme = {
+    naturaleza: [
+      "rio", "montaña", "bosque", "cielo", "mar", "viento", "piedra", "jardin",
+      "lluvia", "hoja", "horizonte", "prado", "arroyo", "valle", "orilla", "trueno",
+      "flor", "glaciar", "cañon", "arrecife", "nevada", "coral", "pradera",
+      "cueva", "cumbre", "laguna", "cascada", "huerto", "vid", "musgo",
+      "brisa", "pino", "duna", "onda", "cedro", "flor silvestre", "cresta",
+      "isla", "lucero", "rocio", "acantilado", "delta", "arboleda", "marea",
+      "guijarro", "dosel", "geiser", "tundra", "cantera", "pantano"
+    ],
+    tiempo: [
+      "hora", "siglo", "instante", "alba", "ocaso", "medianoche", "estacion",
+      "otoño", "invierno", "primavera", "verano", "pasado", "futuro", "memoria",
+      "ayer", "mañana", "eternidad", "reloj", "calendario", "amanecer",
+      "atardecer", "crepusculo", "decada", "edad", "paso", "ciclo", "vida",
+      "instante", "intervalo", "resto", "eco", "huella", "ajuste",
+      "umbral", "infancia", "solsticio", "equinoccio", "resaca", "preludio",
+      "mañana", "tarde", "vigilia", "respiro", "inicio", "menguante", "interludio",
+      "entretanto", "epoca", "lapso"
+    ],
+    amor: [
+      "corazon", "abrazo", "beso", "promesa", "carta", "distancia", "llama",
+      "ternura", "deseo", "anhelo", "reencuentro", "susurro", "mirada", "caricia",
+      "aliento", "suspiro", "devocion", "pasion", "calor", "temblor", "seda",
+      "puerto", "faro", "hilo", "lazo", "nostalgia", "dolor", "entrega",
+      "resplandor", "union", "arrobamiento", "cariño", "dulzura", "ardor",
+      "intimidad", "amado", "alma gemela", "pacto", "fidelidad", "ensoñacion",
+      "encanto", "flechazo", "serenata", "caricia", "dicha", "gracia",
+      "armonia", "melodia", "chispa", "atraccion"
+    ],
+    soledad: [
+      "silencio", "sombra", "vacio", "ausencia", "lejania", "oquedad",
+      "quietud", "calma", "aislamiento", "retiro", "desierto", "exilio",
+      "refugio", "camara", "pasillo", "umbral", "alcoba", "crepusculo",
+      "reflejo", "partida", "separacion", "errante", "forastero",
+      "ermita", "faro", "ruina", "ascenso", "deriva", "ancla",
+      "velo", "frontera", "extension", "olvido", "limbo", "palido",
+      "solitario", "fantasma", "avanzada", "margen", "claro", "refugio",
+      "hueco", "lapso", "intervalo", "interin", "elipsis", "residuo",
+      "azul", "ambar"
+    ],
+    asombro: [
+      "estrella", "galaxia", "cosmos", "infinito", "misterio", "sueño", "viaje",
+      "descubrimiento", "frontera", "nebulosa", "cometa", "orbita", "universo",
+      "horizonte", "milagro", "enigma", "laberinto", "caleidoscopio", "prisma",
+      "constelacion", "supernova", "particula", "dimension", "portal",
+      "revelacion", "acertijo", "busqueda", "fenomeno", "espectaculo", "maravilla",
+      "alquimia", "paradoja", "cuanto", "fractal", "longitud de onda", "cenit",
+      "eter", "cifra", "espejismo", "fantasma", "elisio", "arcano",
+      "firmamento", "ecuador", "meridiano", "estrella polar", "eclipse", "aurora",
+      "solsticio", "apogeo"
+    ],
+    memoria: [
+      "fotografia", "recuerdo", "reliquia", "diario", "fragmento", "rastro",
+      "impresion", "legado", "herencia", "reliquia familiar", "monumento", "ruina",
+      "cronica", "testamento", "epitafio", "recuerdo", "señal", "artefacto",
+      "archivo", "vestigio", "impronta", "palimpsesto", "fantasma",
+      "linaje", "origen", "pasaje", "hogar", "umbral", "ventana",
+      "album", "carta", "retrato", "colgante", "medallon", "cuento",
+      "fabula", "parabola", "balada", "manuscrito", "pergamino", "rollo",
+      "codice", "cartografia", "brujula", "linterna", "tapiz", "mosaico",
+      "fresco", "holograma"
+    ]
+  };
+
+  var esVerbsByTheme = {
+    naturaleza: [
+      "fluye", "sube", "cae", "deriva", "mece", "florece", "cae en cascada", "erosiona",
+      "susurra", "ruge", "brilla", "reluce", "despliega", "esparce", "olea",
+      "vaga", "anida", "acuna", "rompe", "tiembla", "murmura", "ondula",
+      "disuelve", "despierta", "respira", "estira", "escala", "desciende",
+      "irradia", "estremece", "envuelve", "enciende", "mengua", "ondea",
+      "brota", "marchita", "destella", "florece", "serpentea", "choca"
+    ],
+    tiempo: [
+      "desvanece", "permanece", "vuelve", "pasa", "deshila", "disuelve", "resuena",
+      "retrocede", "emerge", "persiste", "decae", "renueva", "llega", "parte",
+      "suspende", "acelera", "mora", "desaparece", "repite", "perdura",
+      "trasciende", "otorga", "borra", "resuena", "aquieta", "transcurre",
+      "llama", "apresura", "prolonga", "cesa", "comienza", "reanuda",
+      "sobrevive", "acontece", "culmina", "precede", "revive", "revisita",
+      "presagia", "reclama"
+    ],
+    amor: [
+      "sostiene", "añora", "tiembla", "rinde", "florece", "enciende", "derrite",
+      "enlaza", "aprecia", "adora", "abraza", "despliega", "enciende", "duele",
+      "disuelve", "resuena", "irradia", "llama", "permanece", "consagra",
+      "despierta", "encanta", "cautiva", "consuela", "perdona", "atesora",
+      "nutre", "cobija", "desmaya", "deleita", "consagra", "codicia",
+      "bendice", "envuelve", "funde", "une", "promete", "otorga", "confia", "revela"
+    ],
+    soledad: [
+      "retira", "vaga", "reflexiona", "observa", "escucha", "soporta",
+      "contempla", "retrocede", "mora", "espera", "busca", "atraviesa",
+      "asciende", "desciende", "permanece", "persiste", "habita", "deambula",
+      "pondera", "contempla", "resiste", "navega", "llama", "enfrenta",
+      "renuncia", "abandona", "medita", "percibe", "discierne", "despliega",
+      "deshace", "escinde", "corta", "cruza", "supera", "trasciende",
+      "tamiza", "recoge", "ajusta", "huye"
+    ],
+    asombro: [
+      "descubre", "explora", "imagina", "contempla", "vislumbra", "desentraña",
+      "trasciende", "ilumina", "conjura", "invoca", "alcanza", "percibe",
+      "aventura", "atraviesa", "devela", "ajusta", "pondera", "maravilla",
+      "adivina", "manifiesta", "cristaliza", "resuena", "irradia", "emana",
+      "visualiza", "presagia", "profetiza", "descifra", "disipa", "enciende",
+      "recorre", "asciende", "sondea", "traza", "extravia", "irrumpe",
+      "convoca", "enciende", "transforma", "transfigura"
+    ],
+    memoria: [
+      "recuerda", "evoca", "revisita", "preserva", "atesora", "traza",
+      "permanece", "ronda", "aprecia", "narra", "desentierra", "reclama",
+      "conmemora", "inmortaliza", "resguarda", "reconstruye", "reune",
+      "esparce", "recoge", "desvanece", "reaparece", "invoca", "convoca",
+      "lega", "hereda", "lleva", "transmite", "registra", "cronica",
+      "graba", "imprime", "captura", "repite", "reaviva", "despierta",
+      "retumba", "sepulta", "exhuma", "consagra", "unge"
+    ]
+  };
+
+  var esAdjectivesByTheme = {
+    naturaleza: [
+      "salvaje", "antiguo", "vasto", "suave", "feroz", "silencioso", "infinito",
+      "verde", "cristalino", "pristino", "turbulento", "tranquilo", "exuberante",
+      "arido", "radiante", "brumoso", "dorado", "plateado", "esmeralda", "azul",
+      "ambar", "carmesi", "jade", "opalo", "zafiro", "ocre", "iridiscente",
+      "luminoso", "sombreado", "soleado", "iluminado por la luna", "azotado por el viento",
+      "besado por el rocio", "sacudido por la tormenta", "salpicado de estrellas",
+      "gastado por las olas", "cubierto de liquen", "cubierto de musgo", "lavado por la lluvia"
+    ],
+    tiempo: [
+      "fugaz", "eterno", "antiguo", "breve", "infinito", "pasajero",
+      "persistente", "perdido", "distante", "iminente", "implacable", "paciente",
+      "apresurado", "tardio", "tardio", "intempestivo", "estacional", "ciclico",
+      "suspendido", "irreversible", "evanescente", "perpetuo", "transitorio",
+      "impermanente", "inmutable", "desplegandose", "recurrente", "pasado",
+      "naciente", "senescente", "crepuscular", "auroral", "dilatorio",
+      "mercurial", "sempiterno", "prolongado", "efimero", "eterno",
+      "milenario", "primordial"
+    ],
+    amor: [
+      "tierno", "feroz", "callado", "ardiente", "suave", "profundo", "fragil",
+      "firme", "doloroso", "radiante", "secreto", "infinito", "no dicho",
+      "tembloroso", "dulce", "agridulce", "eterno", "imprudente", "devoto",
+      "añorante", "inquieto", "paciente", "salvaje", "suave", "sagrado",
+      "profano", "casto", "ardiente", "apacible", "eterno",
+      "lambente", "rapsodico", "extasiado", "latente", "incandescente",
+      "apreciado", "amado", "cautivo", "dispuesto", "eterno"
+    ],
+    soledad: [
+      "callado", "quieto", "hueco", "distante", "frio", "vasto", "vacio",
+      "profundo", "ininterrumpido", "hondo", "palido", "desnudo", "austero", "remoto",
+      "oculto", "intacto", "apartado", "desolado", "abandonado", "oscuro",
+      "severo", "escaso", "sin adornos", "desnudo", "crudo", "arido",
+      "tenue", "opaco", "translucido", "penumbral", "crepuscular",
+      "vestigial", "sin amarras", "a la deriva", "sin ancla", "no reclamado",
+      "no escrito", "no dicho", "inexplorado", "desconocido"
+    ],
+    asombro: [
+      "infinito", "misterioso", "brillante", "extraño", "sublime", "oculto",
+      "cosmico", "celestial", "luminoso", "insondable", "magnifico",
+      "etereo", "trascendente", "inefable", "ilimitado", "inexplorado",
+      "inexplicable", "asombroso", "impresionante", "sobrecogedor",
+      "fantasmal", "caleidoscopico", "prismatico", "nebuloso", "sideral",
+      "empireo", "superno", "numinoso", "serafico", "beatifico",
+      "resplandeciente", "centelleante", "coruscante", "efulgente", "refulgente",
+      "ultramundano", "extramundano", "hiperboreo", "elisio", "olimpico"
+    ],
+    memoria: [
+      "desvanecido", "distante", "apreciado", "olvidado", "vivido", "borroso",
+      "fragil", "persistente", "fugaz", "persistente", "agridulce", "tierno",
+      "medio recordado", "onirico", "espectral", "sepia", "gastado por el tiempo",
+      "reconstruido", "embellecido", "erosionado", "palimpsestico", "vestigial",
+      "lagunar", "eliptico", "refractado", "prismatico", "resonante",
+      "reverberante", "recurrente", "intrusivo", "evocador", "resonante",
+      "mnemonico", "anamnestico", "nostalgico", "melancolico", "elegiaco",
+      "conmemorativo", "aromatico", "sugerente"
+    ]
+  };
+
+  var esAbstractNouns = [
+    "eternidad", "silencio", "memoria", "sombra", "luz", "sueño", "canto",
+    "aliento", "llama", "ola", "polvo", "ceniza", "oro", "cristal", "hueso",
+    "raiz", "ala", "puerta", "puente", "llave", "semilla", "velo", "nudo",
+    "campana", "rueda", "red", "chispa", "sal", "hilo", "filo", "vasija",
+    "espejo", "prisma", "lente", "cifra", "mapa", "reloj de arena", "brujula",
+    "ancla", "timon", "vela", "remo", "escalera", "espiral", "circulo", "linea",
+    "punto", "borde", "centro", "horizonte", "umbral", "puerta", "arco", "cuerda"
+  ];
+
+  var esRhymePairs = [
+    ["luz", "cruz"], ["mar", "cantar"], ["flor", "amor"], ["viento", "sentimiento"],
+    ["cielo", "suelo"], ["noche", "derroche"], ["sol", "caracol"], ["piedra", "hiedra"],
+    ["arena", "pena"], ["rio", "frio"], ["fuego", "juego"], ["sombra", "alfombra"],
+    ["camino", "destino"], ["estrella", "huella"], ["vida", "herida"],
+    ["dolor", "color"], ["tierra", "sierra"], ["ola", "amapola"], ["beso", "peso"],
+    ["sueño", "dueño"], ["alma", "calma"], ["tiempo", "viento"], ["lluvia", "llama"],
+    ["corazon", "cancion"], ["recuerdo", "acuerdo"], ["mano", "verano"],
+    ["puerta", "abierta"], ["espejo", "reflejo"], ["viaje", "paisaje"],
+    ["palabra", "abre"], ["silencio", "incienso"], ["alto", "asalto"],
+    ["nieve", "mueve"], ["lagrima", "anima"], ["mirada", "madrugada"],
+    ["ceniza", "prisa"], ["oro", "tesoro"], ["hierro", "destierro"],
+    ["nube", "sube"], ["raiz", "matiz"], ["eco", "hueco"], ["ala", "escala"],
+    ["polvo", "resuelvo"], ["vela", "estela"], ["rosa", "hermosa"],
+    ["tumba", "derRumba"], ["canto", "quebranto"], ["prado", "sagrado"]
+  ];
+
+  var esHaiku5 = [
+    "rocío en la brizna",
+    "luna sobre el junco",
+    "viento entre los pinos",
+    "silencio de nieve",
+    "golondrina al alba",
+    "campana lejana",
+    "senda entre la niebla",
+    "luz sobre el estanque",
+    "hoja que se suelta",
+    "grillo en la penumbra",
+    "lluvia de verano",
+    "piedra en el camino",
+    "nube pasajera",
+    "rama de cerezo",
+    "musgo en la escalera",
+    "alba sobre el puerto",
+    "taza de te humeante",
+    "huellas en la arena",
+    "templo entre la bruma",
+    "eco de tambores",
+    "mariposa blanca",
+    "viejo sauce llora",
+    "niebla en la cañada",
+    "lucero del alba",
+    "sombra de la garza"
+  ];
+
+  var esHaiku7 = [
+    "el rio sigue su curso",
+    "la montaña no responde",
+    "mariposa en la ventana",
+    "voces que el viento se lleva",
+    "campanas de la ermita",
+    "senderos que se bifurcan",
+    "la luna llena en el lago",
+    "aroma de pan reciente",
+    "el mar besando la orilla",
+    "escribe el agua en la piedra",
+    "un pajaro cruza el cielo",
+    "hojas secas en el suelo",
+    "atardecer en los alamos",
+    "la guitarra en el silencio",
+    "cae la tarde en el parque",
+    "el perfume del jazmin",
+    "se deshoja la magnolia",
+    "caminos de polvo y sol",
+    "el cipres junto a la tapia",
+    "palomas en el alero",
+    "rescoldo de la fogata",
+    "primera estrella del dia",
+    "el rumor de la acequia",
+    "flores de jacaranda",
+    "pinceladas de la aurora"
+  ];
+
+  var esTitleTemplates = [
+    function (rng, theme) {
+      var tKey = theme === "nature" ? "naturaleza" :
+                 theme === "time" ? "tiempo" :
+                 theme === "love" ? "amor" :
+                 theme === "solitude" ? "soledad" :
+                 theme === "wonder" ? "asombro" : "memoria";
+      return cap(pick(esAdjectivesByTheme[tKey], rng)) + " " + cap(pick(esNounsByTheme[tKey], rng));
+    },
+    function (rng, theme) {
+      var tKey = theme === "nature" ? "naturaleza" :
+                 theme === "time" ? "tiempo" :
+                 theme === "love" ? "amor" :
+                 theme === "solitude" ? "soledad" :
+                 theme === "wonder" ? "asombro" : "memoria";
+      return "El " + cap(pick(esNounsByTheme[tKey], rng)) + " de " + cap(pick(esAbstractNouns, rng));
+    },
+    function (rng, theme) {
+      var tKey = theme === "nature" ? "naturaleza" :
+                 theme === "time" ? "tiempo" :
+                 theme === "love" ? "amor" :
+                 theme === "solitude" ? "soledad" :
+                 theme === "wonder" ? "asombro" : "memoria";
+      return cap(pick(esVerbsByTheme[tKey], rng)) + " " + cap(pick(esNounsByTheme[tKey], rng));
+    },
+    function (rng, theme) {
+      var tKey = theme === "nature" ? "naturaleza" :
+                 theme === "time" ? "tiempo" :
+                 theme === "love" ? "amor" :
+                 theme === "solitude" ? "soledad" :
+                 theme === "wonder" ? "asombro" : "memoria";
+      return cap(pick(esAdjectivesByTheme[tKey], rng)) + " " + cap(pick(esAbstractNouns, rng));
+    },
+    function (rng) {
+      return cap(pick(esAbstractNouns, rng)) + " y " + cap(pick(esAbstractNouns, rng));
+    }
+  ];
+
+  function esGenerateQuatrain(rng, theme) {
+    var tKey = theme === "nature" ? "naturaleza" :
+               theme === "time" ? "tiempo" :
+               theme === "love" ? "amor" :
+               theme === "solitude" ? "soledad" :
+               theme === "wonder" ? "asombro" : "memoria";
+
+    var rhyme = pick(esRhymePairs, rng);
+    var adj1 = pick(esAdjectivesByTheme[tKey], rng);
+    var noun1 = pick(esNounsByTheme[tKey], rng);
+    var verb1 = pick(esVerbsByTheme[tKey], rng);
+    var noun2 = pick(esNounsByTheme[tKey], rng);
+
+    return [
+      "El " + adj1 + " " + noun1 + " " + verb1 + " en el " + noun2,
+      "Un " + pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esAbstractNouns, rng) + " de " + rhyme[0],
+      "Donde " + pick(esNounsByTheme[tKey], rng) + " y " + pick(esAbstractNouns, rng) + " suavemente " + pick(esVerbsByTheme[tKey], rng),
+      "Bajo el " + pick(esAdjectivesByTheme[tKey], rng) + " velo de " + rhyme[1]
+    ];
+  }
+
+  function esGenerateHaiku(rng, theme) {
+    return [
+      pick(esHaiku5, rng),
+      pick(esHaiku7, rng),
+      pick(esHaiku5, rng)
+    ];
+  }
+
+  function esGenerateCouplets(rng, theme) {
+    var tKey = theme === "nature" ? "naturaleza" :
+               theme === "time" ? "tiempo" :
+               theme === "love" ? "amor" :
+               theme === "solitude" ? "soledad" :
+               theme === "wonder" ? "asombro" : "memoria";
+
+    var rhyme1 = pick(esRhymePairs, rng);
+    var rhyme2 = pick(esRhymePairs, rng);
+    var adj1 = pick(esAdjectivesByTheme[tKey], rng);
+    var noun1 = pick(esNounsByTheme[tKey], rng);
+    var verb1 = pick(esVerbsByTheme[tKey], rng);
+
+    return [
+      "El " + adj1 + " " + noun1 + " " + verb1 + " en la " + rhyme1[0],
+      "Un " + pick(esAdjectivesByTheme[tKey], rng) + " recuerdo tallado de " + rhyme1[1],
+      "",
+      "Atravesamos el " + pick(esNounsByTheme[tKey], rng) + " de " + rhyme2[0],
+      "Y " + pick(esVerbsByTheme[tKey], rng) + " lo que persiste en la " + rhyme2[1]
+    ];
+  }
+
+  function esGenerateFreeverse(rng, theme) {
+    var tKey = theme === "nature" ? "naturaleza" :
+               theme === "time" ? "tiempo" :
+               theme === "love" ? "amor" :
+               theme === "solitude" ? "soledad" :
+               theme === "wonder" ? "asombro" : "memoria";
+
+    var templates = [
+      function () {
+        return [
+          pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esNounsByTheme[tKey], rng) + ",",
+          ing(pick(esVerbsByTheme[tKey], rng)) + " a traves de " + pick(esAbstractNouns, rng) + " y " + pick(esAbstractNouns, rng),
+          "",
+          "hay un " + pick(esAbstractNouns, rng),
+          "donde el " + pick(esNounsByTheme[tKey], rng) + " " + pick(esVerbsByTheme[tKey], rng),
+          "y nada " + pick(esVerbsByTheme[tKey], rng),
+          "sino el " + pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esAbstractNouns, rng)
+        ];
+      },
+      function () {
+        return [
+          "He " + ed(pick(esVerbsByTheme[tKey], rng)) + " el " + pick(esNounsByTheme[tKey], rng),
+          "y " + ed(pick(esVerbsByTheme[tKey], rng)) + " el " + pick(esAbstractNouns, rng) + " de " + pick(esNounsByTheme[tKey], rng) + "s",
+          "",
+          "aun el " + pick(esNounsByTheme[tKey], rng) + " " + pick(esVerbsByTheme[tKey], rng),
+          "en el " + pick(esAdjectivesByTheme[tKey], rng) + " borde",
+          "de " + pick(esAbstractNouns, rng)
+        ];
+      },
+      function () {
+        return [
+          "entre " + pick(esNounsByTheme[tKey], rng) + " y " + pick(esNounsByTheme[tKey], rng),
+          "un " + pick(esAbstractNouns, rng) + " se abre",
+          "",
+          pick(esAdjectivesByTheme[tKey], rng) + " y " + pick(esAdjectivesByTheme[tKey], rng),
+          "" + pick(esVerbsByTheme[tKey], rng) + " sin " + pick(esAbstractNouns, rng),
+          "",
+          "lo que pasa:",
+          pick(esAbstractNouns, rng) + ", " + pick(esAbstractNouns, rng) + ", " + pick(esAbstractNouns, rng)
+        ];
+      }
+    ];
+    return pick(templates, rng)();
+  }
+
+  function esGenerateTercets(rng, theme) {
+    var tKey = theme === "nature" ? "naturaleza" :
+               theme === "time" ? "tiempo" :
+               theme === "love" ? "amor" :
+               theme === "solitude" ? "soledad" :
+               theme === "wonder" ? "asombro" : "memoria";
+
+    var rhyme1 = pick(esRhymePairs, rng);
+    var rhyme2 = pick(esRhymePairs, rng);
+
+    return [
+      "El " + pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esNounsByTheme[tKey], rng) + " de " + rhyme1[0],
+      "donde " + pick(esNounsByTheme[tKey], rng) + "s " + pick(esVerbsByTheme[tKey], rng) + " a traves del " + rhyme2[0],
+      "un " + pick(esAbstractNouns, rng) + " de " + rhyme1[1] + " y " + rhyme2[1],
+      "",
+      "Mas alla del " + pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esNounsByTheme[tKey], rng),
+      "el " + pick(esAbstractNouns, rng) + " " + pick(esVerbsByTheme[tKey], rng) + " solo",
+      "en " + pick(esAdjectivesByTheme[tKey], rng) + " " + pick(esAbstractNouns, rng) + " y " + pick(esAbstractNouns, rng)
+    ];
+  }
+
+  var esFormGenerators = [
+    { form: "cuarteto", fn: esGenerateQuatrain },
+    { form: "haiku", fn: esGenerateHaiku },
+    { form: "pareados", fn: esGenerateCouplets },
+    { form: "verso libre", fn: esGenerateFreeverse },
+    { form: "tercetos", fn: esGenerateTercets }
+  ];
+
+  var esThemes = ["naturaleza", "tiempo", "amor", "soledad", "asombro", "memoria"];
+
+  function themeToEsKey(theme) {
+    if (theme === "nature") return "naturaleza";
+    if (theme === "time") return "tiempo";
+    if (theme === "love") return "amor";
+    if (theme === "solitude") return "soledad";
+    if (theme === "wonder") return "asombro";
+    return "memoria";
+  }
+
   /* ---- Public API ---- */
 
   /**
    * Generate a single poem by index.
    * @param {number} index - 0 to 999
+   * @param {string} [lang='en'] - 'en' or 'es'
    * @returns {object} { id, title, lines, theme, form }
    */
-  function generate(index) {
+  function generate(index, lang) {
+    lang = lang || "en";
     var rng = mulberry32(index);
+
+    if (lang === "es") {
+      var esTheme = pick(esThemes, rng);
+      var esGenerator = pick(esFormGenerators, rng);
+      var esTitleFn = pick(esTitleTemplates, rng);
+      var enTheme = esTheme === "naturaleza" ? "nature" :
+                    esTheme === "tiempo" ? "time" :
+                    esTheme === "amor" ? "love" :
+                    esTheme === "soledad" ? "solitude" :
+                    esTheme === "asombro" ? "wonder" : "memory";
+
+      return {
+        id: index,
+        title: esTitleFn(rng, esTheme),
+        lines: esGenerator.fn(rng, esTheme),
+        theme: enTheme,
+        form: esGenerator.form,
+        lang: "es"
+      };
+    }
 
     var theme = pick(themes, rng);
     var generator = pick(formGenerators, rng);
     var titleFn = pick(titleTemplates, rng);
 
-    var title = titleFn(rng, theme);
-    var lines = generator.fn(rng, theme);
-
     return {
       id: index,
-      title: title,
-      lines: lines,
+      title: titleFn(rng, theme),
+      lines: generator.fn(rng, theme),
       theme: theme,
-      form: generator.form
+      form: generator.form,
+      lang: "en"
     };
   }
 
@@ -491,10 +952,11 @@ var PoemEngine = (function () {
    * @param {number} count - number of poems to generate
    * @returns {object[]}
    */
-  function generateBatch(start, count) {
+  function generateBatch(start, count, lang) {
+    lang = lang || "en";
     var result = [];
     for (var i = 0; i < count; i++) {
-      result.push(generate(start + i));
+      result.push(generate(start + i, lang));
     }
     return result;
   }

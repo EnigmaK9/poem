@@ -1,7 +1,7 @@
 /*
  * Creation Date: 2026-07-10
  * Last Modified: 2026-07-10
- * Description: Single-poem display with daily-fixed shuffle
+ * Description: Single-poem display with daily-fixed shuffle and EN/ES toggle
  * Author: enigmak9
  */
 
@@ -14,23 +14,20 @@
 
   var dailyOrder = [];
   var currentPosition = 0;
+  var currentLang = "en";
 
-  /**
-   * Generate a poem object given its global index.
-   * 0-999: original procedural poems
-   * 1000-1999: famous author poems
-   */
-  function getPoem(globalIndex) {
+  function getPoem(globalIndex, lang) {
+    lang = lang || currentLang;
     if (globalIndex < TOTAL_ORIGINAL) {
-      var p = PoemEngine.generate(globalIndex);
+      var p = PoemEngine.generate(globalIndex, lang);
       return {
         title: p.title,
         lines: p.lines,
-        attribution: "generated / " + p.form + " / " + p.theme,
+        attribution: (lang === "es" ? "generado / " : "generated / ") + p.form + " / " + p.theme,
         index: globalIndex
       };
     }
-    var fp = FamousEngine.generate(globalIndex - TOTAL_ORIGINAL);
+    var fp = FamousEngine.generate(globalIndex - TOTAL_ORIGINAL, lang);
     return {
       title: fp.title,
       lines: fp.lines,
@@ -39,9 +36,6 @@
     };
   }
 
-  /**
-   * Render a single poem into the display area.
-   */
   function showPoem(poem, position) {
     document.getElementById("poem-title").textContent = poem.title;
     document.getElementById("poem-attribution").textContent = poem.attribution;
@@ -62,12 +56,23 @@
     document.getElementById("poem-counter").textContent = (position + 1) + " of " + TOTAL;
   }
 
+  function showCurrent() {
+    showPoem(getPoem(dailyOrder[currentPosition], currentLang), currentPosition);
+  }
+
   function showNext() {
     currentPosition++;
     if (currentPosition >= dailyOrder.length) {
       currentPosition = 0;
     }
-    showPoem(getPoem(dailyOrder[currentPosition]), currentPosition);
+    showCurrent();
+  }
+
+  function toggleLang() {
+    currentLang = currentLang === "en" ? "es" : "en";
+    var btn = document.getElementById("lang-toggle");
+    btn.textContent = currentLang === "en" ? "ES" : "EN";
+    showCurrent();
   }
 
   function init() {
@@ -87,14 +92,19 @@
     currentPosition = 0;
 
     document.getElementById("date-label").textContent = Rotation.getTodayLabel();
-    showPoem(getPoem(dailyOrder[0]), 0);
+    showCurrent();
 
     document.getElementById("next-poem").addEventListener("click", showNext);
+    document.getElementById("lang-toggle").addEventListener("click", toggleLang);
 
     document.addEventListener("keydown", function (e) {
       if (e.key === "ArrowRight" || e.key === " " || e.key === "n") {
         e.preventDefault();
         showNext();
+      }
+      if (e.key === "t") {
+        e.preventDefault();
+        toggleLang();
       }
     });
   }

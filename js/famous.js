@@ -996,18 +996,49 @@ var FamousEngine = (function () {
     { name: "Gabriela Mistral", lang: "es", gen: generateMistralStyle }
   ];
 
+  /* ---- Spanish Author Generators for ES mode ---- */
+
+  var authorsES = [
+    { name: "Pablo Neruda", lang: "es", gen: generateNerudaStyle },
+    { name: "Antonio Machado", lang: "es", gen: generateMachadoStyle },
+    { name: "Gustavo Adolfo Becquer", lang: "es", gen: generateBecquerStyle },
+    { name: "Gabriela Mistral", lang: "es", gen: generateMistralStyle }
+  ];
+
   /* ---- Public API ---- */
 
   var REAL_COUNT = realPoems.length;
   var TOTAL = 1000;
 
-  /**
-   * Generate a famous-author poem by index (0-999).
-   * Indices 0-29 return real poems; 30-999 are author-style generated.
-   * @param {number} index
-   * @returns {object} { title, author, language, lines }
-   */
-  function generate(index) {
+  function generate(index, lang) {
+    lang = lang || "en";
+
+    if (lang === "es") {
+      // In ES mode: use original Spanish-language real poems + ES author generators
+      if (index < realPoems.length) {
+        // Return Spanish-original poems as-is, translate English-original ones
+        var enPoem = realPoems[index];
+        if (enPoem.language === "es") {
+          return enPoem;
+        }
+        // For English real poems in ES mode, return a generated ES poem instead
+        // using the same index seed for determinism
+        var rngES = mulberry32(index * 1000);
+        return generateNerudaStyle(rngES);
+      }
+
+      var adjES = index - realPoems.length;
+      var slotES = adjES % authorsES.length;
+      var aES = authorsES[slotES];
+      var seedES = Math.floor(adjES / authorsES.length);
+      var rngES2 = mulberry32(seedES * 100 + slotES);
+      var poemES = aES.gen(rngES2);
+      poemES.author = aES.name;
+      poemES.language = "es";
+      poemES.id = index;
+      return poemES;
+    }
+
     if (index < realPoems.length) {
       return realPoems[index];
     }
@@ -1028,10 +1059,12 @@ var FamousEngine = (function () {
 
   function selfCheck() {
     var p0 = generate(0);
+    var p0es = generate(0, "es");
     var p30 = generate(30);
     var p999 = generate(999);
     return {
       realPoem0: p0.author,
+      realPoem0ES: p0es.author,
       generated30: p30.author,
       generated999: p999.author,
       total: TOTAL,
