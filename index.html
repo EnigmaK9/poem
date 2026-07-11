@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daily Poems</title>
-  <meta name="description" content="A collection of procedurally generated poems that change daily.">
+  <meta name="description" content="A collection of 2000 poems — procedural and classic — that change daily.">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <a href="#poem-stream" class="skip-link">Skip to poems</a>
+  <a href="#poem-display" class="skip-link">Skip to poem</a>
 
   <header class="site-header">
     <h1>Daily Poems</h1>
@@ -16,22 +16,29 @@
   </header>
 
   <main class="container">
-    <div id="poem-stream" class="poem-stream"></div>
+    <div id="poem-display" class="poem-display">
+      <h2 id="poem-title" class="poem__title"></h2>
+      <span id="poem-attribution" class="poem__attribution"></span>
+      <div id="poem-body" class="poem__body"></div>
+    </div>
 
-    <div class="load-more-wrap">
-      <button id="load-more" class="load-more-btn">Load 20 more</button>
+    <div class="poem-controls">
+      <span id="poem-counter" class="poem-counter"></span>
+      <button id="next-poem" class="next-btn">Show another</button>
+      <span class="next-hint">Arrow Right / Space / N</span>
     </div>
   </main>
 
   <footer class="site-footer">
-    <span id="poem-count">1000</span> poems &middot; regenerated daily
+    2000 poems &middot; new order each day
   </footer>
 
   <noscript>
-    <p>This site requires JavaScript to generate poems.</p>
+    <p>This site requires JavaScript to display poems.</p>
   </noscript>
 
   <script src="js/poems.js"></script>
+  <script src="js/famous.js"></script>
   <script src="js/rotation.js"></script>
   <script src="js/main.js"></script>
 </body>

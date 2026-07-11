@@ -1,125 +1,101 @@
 /*
  * Creation Date: 2026-07-10
  * Last Modified: 2026-07-10
- * Description: DOM rendering and initialization for the poetry site
+ * Description: Single-poem display with daily-fixed shuffle
  * Author: enigmak9
  */
 
 (function () {
   "use strict";
 
-  var POEMS_PER_PAGE = 20;
-  var displayOrder = [];
-  var renderedCount = 0;
-  var streamEl = null;
-  var loadMoreBtn = null;
+  var TOTAL_ORIGINAL = 1000;
+  var TOTAL_FAMOUS = 1000;
+  var TOTAL = TOTAL_ORIGINAL + TOTAL_FAMOUS;
+
+  var dailyOrder = [];
+  var currentPosition = 0;
 
   /**
-   * Create a DOM element for a single poem.
-   * @param {object} poem - poem object from PoemEngine
-   * @param {boolean} isFeatured - whether this is the daily featured poem
-   * @returns {HTMLElement}
+   * Generate a poem object given its global index.
+   * 0-999: original procedural poems
+   * 1000-1999: famous author poems
    */
-  function createPoemElement(poem, isFeatured) {
-    var article = document.createElement("article");
-    article.className = "poem" + (isFeatured ? " poem--featured" : "");
-    article.id = "poem-" + poem.id;
-    article.setAttribute("data-index", poem.id);
-    article.setAttribute("data-theme", poem.theme);
-    article.setAttribute("data-form", poem.form);
-
-    if (isFeatured) {
-      var badge = document.createElement("span");
-      badge.className = "poem__badge";
-      badge.textContent = "Poem of the Day";
-      article.appendChild(badge);
+  function getPoem(globalIndex) {
+    if (globalIndex < TOTAL_ORIGINAL) {
+      var p = PoemEngine.generate(globalIndex);
+      return {
+        title: p.title,
+        lines: p.lines,
+        attribution: "generated / " + p.form + " / " + p.theme,
+        index: globalIndex
+      };
     }
+    var fp = FamousEngine.generate(globalIndex - TOTAL_ORIGINAL);
+    return {
+      title: fp.title,
+      lines: fp.lines,
+      attribution: fp.author + " / " + fp.language,
+      index: globalIndex
+    };
+  }
 
-    var header = document.createElement("header");
-    header.className = "poem__header";
+  /**
+   * Render a single poem into the display area.
+   */
+  function showPoem(poem, position) {
+    document.getElementById("poem-title").textContent = poem.title;
+    document.getElementById("poem-attribution").textContent = poem.attribution;
 
-    var index = document.createElement("span");
-    index.className = "poem__index";
-    index.textContent = "#" + poem.id;
-
-    var title = document.createElement("h2");
-    title.className = "poem__title";
-    title.textContent = poem.title;
-
-    var meta = document.createElement("span");
-    meta.className = "poem__meta";
-    meta.textContent = poem.form + " / " + poem.theme;
-
-    header.appendChild(index);
-    header.appendChild(title);
-    header.appendChild(meta);
-    article.appendChild(header);
-
-    var body = document.createElement("div");
-    body.className = "poem__body";
+    var bodyEl = document.getElementById("poem-body");
+    bodyEl.innerHTML = "";
 
     for (var i = 0; i < poem.lines.length; i++) {
       if (poem.lines[i] === "") {
-        var br = document.createElement("br");
-        body.appendChild(br);
+        bodyEl.appendChild(document.createElement("br"));
       } else {
         var p = document.createElement("p");
-        p.className = "poem__line";
         p.textContent = poem.lines[i];
-        body.appendChild(p);
+        bodyEl.appendChild(p);
       }
     }
 
-    article.appendChild(body);
-    return article;
+    document.getElementById("poem-counter").textContent = (position + 1) + " of " + TOTAL;
   }
 
-  /**
-   * Render a batch of poems into the stream.
-   * @param {number} start - starting position in displayOrder
-   * @param {number} count - how many to render
-   */
-  function renderBatch(start, count) {
-    var fragment = document.createDocumentFragment();
-    var end = Math.min(start + count, displayOrder.length);
-
-    for (var i = start; i < end; i++) {
-      var poem = PoemEngine.generate(displayOrder[i]);
-      var isFeatured = i === 0 && start === 0;
-      fragment.appendChild(createPoemElement(poem, isFeatured));
+  function showNext() {
+    currentPosition++;
+    if (currentPosition >= dailyOrder.length) {
+      currentPosition = 0;
     }
-
-    streamEl.appendChild(fragment);
-    renderedCount = end;
-
-    if (renderedCount >= displayOrder.length) {
-      loadMoreBtn.style.display = "none";
-    }
+    showPoem(getPoem(dailyOrder[currentPosition]), currentPosition);
   }
 
-  /**
-   * Initialize the page.
-   */
   function init() {
     var check = PoemEngine.selfCheck();
     if (!check.allUnique) {
-      // ponytail: silent fallback, generation is deterministic so this should never fire
       document.body.textContent = "Poem generation check failed. Please reload.";
       return;
     }
 
-    displayOrder = Rotation.getDisplayOrder(PoemEngine.TOTAL_POEMS);
+    var fcheck = FamousEngine.selfCheck();
+    if (!fcheck.realPoem0) {
+      document.body.textContent = "Famous poem check failed. Please reload.";
+      return;
+    }
 
-    streamEl = document.getElementById("poem-stream");
-    loadMoreBtn = document.getElementById("load-more");
+    dailyOrder = Rotation.getDailyOrder(TOTAL);
+    currentPosition = 0;
 
     document.getElementById("date-label").textContent = Rotation.getTodayLabel();
-    document.getElementById("poem-count").textContent = PoemEngine.TOTAL_POEMS;
+    showPoem(getPoem(dailyOrder[0]), 0);
 
-    renderBatch(0, POEMS_PER_PAGE);
+    document.getElementById("next-poem").addEventListener("click", showNext);
 
-    loadMoreBtn.addEventListener("click", function () {
-      renderBatch(renderedCount, POEMS_PER_PAGE);
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "n") {
+        e.preventDefault();
+        showNext();
+      }
     });
   }
 

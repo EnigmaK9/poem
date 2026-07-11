@@ -8,11 +8,16 @@
 var Rotation = (function () {
   "use strict";
 
-  /**
-   * Get the day-of-year seed based on UTC date.
-   * Ensures consistent rotation across all timezones.
-   * @returns {number} days since start of current UTC year
-   */
+  function mulberry32(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6d2b79f5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   function getDailySeed() {
     var now = new Date();
     var utcYear = now.getUTCFullYear();
@@ -22,66 +27,52 @@ var Rotation = (function () {
   }
 
   /**
-   * Get the featured poem index for today.
-   * @param {number} totalPoems - total number of poems available
-   * @returns {number} index of the daily poem
+   * Build a daily-fixed shuffled order of poem indices.
+   * Fisher-Yates shuffle seeded by the day, so it's the same all day.
+   * @param {number} totalPoems
+   * @returns {number[]}
    */
-  function getDailyPoemIndex(totalPoems) {
-    return getDailySeed() % totalPoems;
-  }
-
-  /**
-   * Build the display order for all poems.
-   * Descending order (highest index first), with the daily poem
-   * moved to the front as the featured piece.
-   * @param {number} totalPoems - total number of poems
-   * @returns {number[]} array of indices in display order
-   */
-  function getDisplayOrder(totalPoems) {
-    var dailyIndex = getDailyPoemIndex(totalPoems);
+  function getDailyOrder(totalPoems) {
+    var seed = getDailySeed();
+    var rng = mulberry32(seed);
     var order = [];
 
-    // Build descending list, skipping the daily poem
-    for (var i = totalPoems - 1; i >= 0; i--) {
-      if (i !== dailyIndex) {
-        order.push(i);
-      }
+    // Build identity array
+    for (var i = 0; i < totalPoems; i++) {
+      order.push(i);
     }
 
-    // Prepend daily poem as featured
-    order.unshift(dailyIndex);
+    // Fisher-Yates shuffle with day-seeded RNG
+    for (var j = order.length - 1; j > 0; j--) {
+      var k = Math.floor(rng() * (j + 1));
+      var tmp = order[j];
+      order[j] = order[k];
+      order[k] = tmp;
+    }
 
     return order;
   }
 
-  /**
-   * Get today's date as a human-readable string.
-   * @returns {string} formatted date
-   */
   function getTodayLabel() {
     var now = new Date();
     var options = { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" };
     return now.toLocaleDateString("en-US", options);
   }
 
-  /**
-   * Self-check: verify seed consistency.
-   */
   function selfCheck() {
     var seed1 = getDailySeed();
     var seed2 = getDailySeed();
+    var order = getDailyOrder(10);
     return {
       consistent: seed1 === seed2,
       seed: seed1,
-      dailyIndex: getDailyPoemIndex(1000),
-      displayOrderLength: getDisplayOrder(1000).length
+      orderLength: order.length
     };
   }
 
   return {
     getDailySeed: getDailySeed,
-    getDailyPoemIndex: getDailyPoemIndex,
-    getDisplayOrder: getDisplayOrder,
+    getDailyOrder: getDailyOrder,
     getTodayLabel: getTodayLabel,
     selfCheck: selfCheck
   };
